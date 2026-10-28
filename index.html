@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>I.Com Companion - 3D Ultra Study System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+    body { 
+      font-family: 'Plus Jakarta Sans', sans-serif; 
+      transition: background 0.3s ease, color 0.3s ease; 
+      overflow-x: hidden;
+    }
+
+    /* Ambient 3D Glowing Animated Orbs */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(70px);
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.55;
+    }
+    .orb-1 {
+      width: 420px; height: 420px;
+      background: radial-gradient(circle, #3b82f6 0%, rgba(59,130,246,0) 70%);
+      top: -100px; left: -100px;
+      animation: floatOrb1 16s infinite alternate ease-in-out;
+    }
+    .orb-2 {
+      width: 480px; height: 480px;
+      background: radial-gradient(circle, #8b5cf6 0%, rgba(139,92,246,0) 70%);
+      bottom: -120px; right: -120px;
+      animation: floatOrb2 20s infinite alternate ease-in-out;
+    }
+    @keyframes floatOrb1 {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(120px, 140px) scale(1.15); }
+    }
+    @keyframes floatOrb2 {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(-140px, -120px) scale(0.9); }
+    }
+
+    /* True 3D Isometric Card Depth & Physics */
+    .box-3d {
+      position: relative;
+      transform-style: preserve-3d;
+      perspective: 1000px;
+      transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s ease, border-color 0.35s ease;
+    }
+    .box-3d:hover {
+      transform: translateY(-8px) rotateX(2deg) rotateY(-1deg);
+    }
+    .dark .box-3d {
+      box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.6), inset 0 1px 1px 0 rgba(255, 255, 255, 0.1);
+    }
+    .dark .box-3d:hover {
+      box-shadow: 0 25px 50px -12px rgba(59, 130, 246, 0.35), inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
+    }
+    html:not(.dark) .box-3d {
+      box-shadow: 0 12px 30px -8px rgba(15, 23, 42, 0.12), 0 4px 6px -2px rgba(15, 23, 42, 0.05);
+    }
+    html:not(.dark) .box-3d:hover {
+      box-shadow: 0 22px 40px -10px rgba(37, 99, 235, 0.22);
+    }
+
+    /* Option Click 3D Button Bounce */
+    .btn-3d {
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .btn-3d:active {
+      transform: scale(0.97) translateY(2px);
+    }
+
+    /* Voice Recording Pulse Ring */
+    .mic-live {
+      animation: pulse-ring 1.4s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+    }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8); }
+      70% { transform: scale(1.08); box-shadow: 0 0 0 14px rgba(239, 68, 68, 0); }
+      100% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+
+    /* Custom Glass Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.4); border-radius: 999px; }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-900 dark:bg-[#070d1e] dark:text-slate-100 min-h-screen flex flex-col relative antialiased selection:bg-blue-600 selection:text-white">
+
+  <!-- Glowing Background Orbs -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <!-- Primary 3D Top Header -->
+  <header class="relative z-50 bg-white/80 dark:bg-[#0d162f]/80 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800/80 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center space-x-3.5">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30 transform hover:rotate-6 transition duration-300">
+          <i class="fa-solid fa-graduation-cap text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+            I.Com Companion <span class="text-[10px] bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">3D Edition</span>
+          </h1>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">Punjab & Federal Boards (Pakistan) Complete Study App</p>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-2.5">
+        <button onclick="openApiKeyModal()" class="btn-3d text-xs font-bold bg-white dark:bg-slate-800/90 hover:bg-slate-50 text-slate-800 dark:text-slate-200 px-3.5 py-2 rounded-xl border border-slate-300/80 dark:border-slate-700 shadow-sm flex items-center gap-1.5">
+          <i class="fa-solid fa-key text-blue-500"></i>
+          <span class="hidden sm:inline">Gemini Key</span>
+        </button>
+
+        <button onclick="toggleDarkMode()" class="btn-3d w-10 h-10 rounded-xl bg-white dark:bg-slate-800/90 flex items-center justify-center border border-slate-300/80 dark:border-slate-700 text-slate-700 dark:text-amber-400 shadow-sm" title="Light/Dark Mode">
+          <i id="theme-icon" class="fa-solid fa-moon"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Animated Secondary Navigation Tabs -->
+  <nav class="relative z-40 bg-white/60 dark:bg-[#0d162f]/60 backdrop-blur-lg border-b border-slate-200/80 dark:border-slate-800/80 sticky top-0 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 flex space-x-6 overflow-x-auto text-xs sm:text-sm font-bold py-1">
+      <button onclick="switchTab('ai')" id="tab-ai" class="tab-btn py-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-600 flex items-center gap-2 whitespace-nowrap transition">
+        <i class="fa-solid fa-microphone-lines text-rose-500"></i> Voice AI Tutor
+      </button>
+      <button onclick="switchTab('notes')" id="tab-notes" class="tab-btn py-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-600 flex items-center gap-2 whitespace-nowrap transition">
+        <i class="fa-solid fa-book-bookmark text-blue-500"></i> All Subjects Notes
+      </button>
+      <button onclick="switchTab('mcqs')" id="tab-mcqs" class="tab-btn py-3 border-b-2 border-blue-600 text-blue-600 dark:text-blue-400 flex items-center gap-2 whitespace-nowrap transition font-extrabold">
+        <i class="fa-solid fa-circle-check text-blue-600 dark:text-blue-400"></i> Board MCQs Simulator
+      </button>
+      <button onclick="switchTab('solvers')" id="tab-solvers" class="tab-btn py-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-600 flex items-center gap-2 whitespace-nowrap transition">
+        <i class="fa-solid fa-calculator text-emerald-500"></i> Solved Numericals
+      </button>
+      <button onclick="switchTab('cheatsheet')" id="tab-cheatsheet" class="tab-btn py-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-600 flex items-center gap-2 whitespace-nowrap transition">
+        <i class="fa-solid fa-bolt text-amber-500"></i> Formulas Cheatsheet
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main View Container -->
+  <main class="relative z-10 max-w-6xl mx-auto px-4 py-8 flex-grow w-full">
+
+    <!-- 1. BOARD MCQS SIMULATOR (Fixed Pure High-Contrast Light & Dark Mode) -->
+    <section id="section-mcqs">
+      <div class="box-3d max-w-2xl mx-auto bg-white/95 dark:bg-[#0f1b3b]/95 backdrop-blur-xl rounded-3xl border border-slate-200/90 dark:border-slate-800 p-6 sm:p-9 shadow-2xl">
+        <div class="flex justify-between items-start border-b border-slate-200 dark:border-slate-800/80 pb-4 mb-6">
+          <div>
+            <span class="text-[11px] font-black uppercase tracking-wider text-blue-600 dark:text-blue-400" id="mcq-subject">PRINCIPLES OF ACCOUNTING I</span>
+            <h2 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mt-1">BISE Board Examination MCQ Practice</h2>
+          </div>
+          <div class="text-right">
+            <span class="text-[11px] text-slate-500 dark:text-slate-400 font-bold block uppercase tracking-wider">Score</span>
+            <span class="text-xl font-black text-emerald-600 dark:text-emerald-400" id="mcq-score">0 / 4</span>
+          </div>
+        </div>
+
+        <p class="text-xs font-bold text-slate-600 dark:text-slate-400 mb-2" id="mcq-counter">Question 1 of 4</p>
+        <h3 class="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white mb-6 leading-relaxed" id="mcq-question">
+          Cash invested by the owner into the business is termed as:
+        </h3>
+
+        <!-- Interactive 3D Options Container -->
+        <div class="space-y-3.5" id="mcq-options"></div>
+
+        <!-- Explanation Container -->
+        <div id="mcq-feedback" class="mt-6 p-4 rounded-2xl text-xs sm:text-sm font-bold hidden leading-relaxed shadow-sm"></div>
+
+        <!-- Bottom Controls -->
+        <div class="mt-8 pt-5 border-t border-slate-200 dark:border-slate-800/80 flex justify-between items-center">
+          <button onclick="resetMcqs()" class="btn-3d px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition flex items-center gap-1.5">
+            <i class="fa-solid fa-rotate-left"></i> Reset
+          </button>
+          <button onclick="nextMcq()" class="btn-3d px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs sm:text-sm font-extrabold shadow-lg shadow-blue-500/30 transition flex items-center gap-2">
+            <span>Next MCQ</span>
+            <i class="fa-solid fa-arrow-right text-xs"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. 3D AI VOICE TUTOR -->
+    <section id="section-ai" class="hidden">
+      <div class="box-3d max-w-3xl mx-auto bg-white/95 dark:bg-[#0f1b3b]/95 backdrop-blur-xl rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col h-[76vh]">
+        <!-- Top Bar -->
+        <div class="p-4 bg-slate-50/90 dark:bg-[#0b142c]/90 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+          <div class="flex items-center gap-3">
+            <span class="w-3.5 h-3.5 bg-emerald-500 rounded-full animate-ping"></span>
+            <div>
+              <h2 class="text-sm font-extrabold text-slate-900 dark:text-white">Commerce AI Voice Tutor</h2>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">Strict Roman Urdu & English Support</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="stopSpeech()" class="px-2.5 py-1.5 text-xs text-slate-600 dark:text-slate-300 hover:text-rose-500 font-bold transition">
+              <i class="fa-solid fa-volume-xmark mr-1"></i> Stop Voice
+            </button>
+            <button onclick="clearChat()" class="px-2.5 py-1.5 text-xs text-slate-600 dark:text-slate-300 hover:text-rose-500 font-bold transition">
+              <i class="fa-solid fa-trash-can mr-1"></i> Clear
+            </button>
+          </div>
+        </div>
+
+        <!-- Chat Stream -->
+        <div id="chat-box" class="flex-grow p-4 sm:p-6 overflow-y-auto space-y-4 text-xs sm:text-sm">
+          <div class="flex items-start gap-3">
+            <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center text-xs font-black shrink-0 shadow-md">AI</div>
+            <div class="bg-slate-100 dark:bg-slate-800/90 text-slate-900 dark:text-slate-100 p-4 rounded-3xl rounded-tl-none border border-slate-200 dark:border-slate-700 max-w-[85%] leading-relaxed font-semibold shadow-sm">
+              Assalam-o-Alaikum! Main aapka **I.Com Commerce AI Tutor** hoon.
+              <br><br>
+              Aap mujhse Accounting entries, Business Math, Statistics, Banking, ya Economics ka koi bhi question **type karke** ya neeche **Mic daba kar bol kar** pooch sakte hain. Main simple Roman Urdu aur English mein step-by-step samjhaunga!
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Prompts Chips -->
+        <div class="px-4 py-2 bg-slate-50 dark:bg-[#0b142c] border-t border-slate-200 dark:border-slate-800 flex gap-2 overflow-x-auto text-xs">
+          <button onclick="sendQuickPrompt('Golden rules of debit and credit with real examples samjha dein')" class="btn-3d bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 px-3 py-1.5 rounded-full whitespace-nowrap text-slate-800 dark:text-slate-200 hover:border-blue-500 font-bold shadow-sm">
+            ⚖️ Rules of Debit/Credit
+          </button>
+          <button onclick="sendQuickPrompt('BRS banatay waqt Unpresented Cheques ko add kyun karte hain?')" class="btn-3d bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 px-3 py-1.5 rounded-full whitespace-nowrap text-slate-800 dark:text-slate-200 hover:border-blue-500 font-bold shadow-sm">
+            📄 BRS Unpresented Cheques
+          </button>
+          <button onclick="sendQuickPrompt('Cramers rule se equations solve karne ka step by step rule batayein')" class="btn-3d bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 px-3 py-1.5 rounded-full whitespace-nowrap text-slate-800 dark:text-slate-200 hover:border-blue-500 font-bold shadow-sm">
+            🔢 Cramer's Rule Steps
+          </button>
+        </div>
+
+        <!-- Chat Input Form with Voice Button -->
+        <form onsubmit="handleChatSubmit(event)" class="p-3.5 bg-white dark:bg-[#0f1b3b] border-t border-slate-200 dark:border-slate-800 flex items-center gap-2.5">
+          <button type="button" id="mic-btn" onclick="toggleVoiceInput()" class="btn-3d w-11 h-11 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 shrink-0 shadow-sm" title="Voice se sawal bolein">
+            <i class="fa-solid fa-microphone text-base" id="mic-icon"></i>
+          </button>
+          <input 
+            type="text" 
+            id="chat-input" 
+            placeholder="Type your question or click mic to speak..." 
+            class="flex-grow bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-2xl px-4 py-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-inner"
+            required
+          />
+          <button type="submit" id="send-btn" class="btn-3d bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-2xl text-xs sm:text-sm font-extrabold flex items-center gap-2 shadow-lg shadow-blue-500/30 shrink-0">
+            <span>Send</span>
+            <i class="fa-solid fa-paper-plane text-xs"></i>
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- 3. ALL SUBJECTS NOTES -->
+    <section id="section-notes" class="hidden space-y-6">
+      <div class="grid md:grid-cols-2 gap-5">
+        <div class="box-3d bg-white/95 dark:bg-[#0f1b3b]/95 p-6 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-xl">
+          <span class="text-[10px] font-black uppercase text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/40 px-2.5 py-1 rounded-lg">Principles of Accounting</span>
+          <h3 class="text-base font-black text-slate-900 dark:text-white mt-3">Rules of Debit & Credit</h3>
+          <p class="text-xs text-slate-600 dark:text-slate-300 mt-1 font-semibold leading-relaxed">Modern 5 Heads of Accounts rules:</p>
+          <div class="space-y-2.5 mt-3 text-xs font-bold text-slate-800 dark:text-slate-200">
+            <div class="p-3 bg-slate-50 dark:bg-[#070d1e] rounded-2xl border border-slate-200 dark:border-slate-800">
+              <strong>Assets & Expenses:</strong> Increase = <b class="text-blue-600 dark:text-blue-400">Debit</b>, Decrease = <b class="text-rose-600 dark:text-rose-400">Credit</b>.
+            </div>
+            <div class="p-3 bg-slate-50 dark:bg-[#070d1e] rounded-2xl border border-slate-200 dark:border-slate-800">
+              <strong>Liabilities, Capital & Revenue:</strong> Increase = <b class="text-rose-600 dark:text-rose-400">Credit</b>, Decrease = <b class="text-blue-600 dark:text-blue-400">Debit</b>.
+            </div>
+          </div>
+        </div>
+
+        <div class="box-3d bg-white/95 dark:bg-[#0f1b3b]/95 p-6 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-xl">
+          <span class="text-[10px] font-black uppercase text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/40 px-2.5 py-1 rounded-lg">Business Mathematics</span>
+          <h3 class="text-base font-black text-slate-900 dark:text-white mt-3">Simple & Compound Interest</h3>
+          <p class="text-xs text-slate-600 dark:text-slate-300 mt-1 font-semibold leading-relaxed">Board numerical formulas:</p>
+          <div class="p-3.5 bg-slate-50 dark:bg-[#070d1e] rounded-2xl border border-slate-200 dark:border-slate-800 text-xs font-mono font-bold text-slate-800 dark:text-slate-200 space-y-2 mt-3">
+            <div>• Simple Interest: <b>I = P × R × T</b></div>
+            <div>• Total Amount: <b>A = P(1 + RT)</b></div>
+            <div>• Compound Amount: <b>A = P(1 + r/n)^(nt)</b></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. SOLVERS -->
+    <section id="section-solvers" class="hidden">
+      <div class="max-w-xl mx-auto box-3d bg-white/95 dark:bg-[#0f1b3b]/95 p-6 sm:p-8 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-2xl">
+        <h3 class="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
+          <i class="fa-solid fa-calculator text-blue-600"></i> Straight Line Depreciation Solver
+        </h3>
+        <p class="text-xs text-slate-600 dark:text-slate-400 mt-1 font-semibold">Asset cost aur scrap value enter kar ke yearly depreciation check karein:</p>
+        <div class="grid grid-cols-2 gap-3 mt-5">
+          <div>
+            <label class="text-xs font-bold text-slate-800 dark:text-slate-200">Asset Cost (Rs)</label>
+            <input type="number" id="dep-cost" value="60000" class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 p-2.5 rounded-xl text-xs mt-1 text-slate-900 dark:text-white font-extrabold focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-800 dark:text-slate-200">Scrap Value (Rs)</label>
+            <input type="number" id="dep-scrap" value="6000" class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 p-2.5 rounded-xl text-xs mt-1 text-slate-900 dark:text-white font-extrabold focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div class="col-span-2">
+            <label class="text-xs font-bold text-slate-800 dark:text-slate-200">Life (Years)</label>
+            <input type="number" id="dep-life" value="6" class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 p-2.5 rounded-xl text-xs mt-1 text-slate-900 dark:text-white font-extrabold focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+        </div>
+        <button onclick="calcDep()" class="btn-3d w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-2xl text-xs font-extrabold mt-5 shadow-lg shadow-blue-500/30 transition">Calculate Depreciation</button>
+        <div id="dep-out" class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/30 text-blue-950 dark:text-blue-300 rounded-2xl text-xs font-extrabold border border-blue-200 dark:border-blue-800 shadow-sm">
+          Annual Depreciation: Rs. 9,000 / year (Rate: 15%)
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. RAPID CHEATSHEET -->
+    <section id="section-cheatsheet" class="hidden">
+      <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div class="box-3d bg-white/95 dark:bg-[#0f1b3b]/95 p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-md">
+          <span class="text-[10px] font-black uppercase text-purple-600 dark:text-purple-400">Accounting Equation</span>
+          <p class="text-xs font-mono font-black text-blue-600 dark:text-blue-400 mt-2">Assets = Liabilities + Capital</p>
+        </div>
+        <div class="box-3d bg-white/95 dark:bg-[#0f1b3b]/95 p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-md">
+          <span class="text-[10px] font-black uppercase text-purple-600 dark:text-purple-400">Gross Profit Formula</span>
+          <p class="text-xs font-mono font-black text-blue-600 dark:text-blue-400 mt-2">GP = Net Sales - COGS</p>
+        </div>
+        <div class="box-3d bg-white/95 dark:bg-[#0f1b3b]/95 p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-md">
+          <span class="text-[10px] font-black uppercase text-purple-600 dark:text-purple-400">Fisher's Index</span>
+          <p class="text-xs font-mono font-black text-blue-600 dark:text-blue-400 mt-2">P01 = √(Laspeyre × Paasche)</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Gemini Key Modal -->
+  <div id="api-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+    <div class="box-3d bg-white dark:bg-[#0f1b3b] rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-slate-200 dark:border-slate-800">
+      <h3 class="text-base font-black text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+        <i class="fa-solid fa-key text-blue-500"></i> Free Gemini Key Setup
+      </h3>
+      <p class="text-xs text-slate-600 dark:text-slate-400 mb-4 font-semibold leading-relaxed">
+        Google AI Studio (aistudio.google.com) se free API key copy karein. Yeh key browser ke localStorage mein save rahegi.
+      </p>
+      <input type="password" id="api-key-input" placeholder="Paste AI Key here..." class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 p-3 rounded-2xl text-xs text-slate-900 dark:text-white font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4">
+      <div class="flex justify-end gap-2.5">
+        <button onclick="closeApiKeyModal()" class="btn-3d px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-extrabold text-slate-700 dark:text-slate-300">Cancel</button>
+        <button onclick="saveApiKey()" class="btn-3d px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-black shadow-md transition">Save Key</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="relative z-10 bg-white/60 dark:bg-[#0d162f]/60 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 py-4 text-center text-xs font-bold text-slate-500 dark:text-slate-400">
+    Designed for Pakistani Intermediate Students • Free & Open Source
+  </footer>
+
+  <script>
+    // 1. Dark/Light Mode Engine
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+        document.getElementById('theme-icon').className = 'fa-solid fa-sun';
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.getElementById('theme-icon').className = 'fa-solid fa-moon';
+      }
+    }
+    function toggleDarkMode() {
+      const isDark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      document.getElementById('theme-icon').className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+      renderMcq();
+    }
+    initTheme();
+
+    // 2. Navigation Engine
+    function switchTab(tabId) {
+      document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('border-blue-600', 'text-blue-600', 'dark:text-blue-400', 'font-extrabold');
+        btn.classList.add('border-transparent', 'text-slate-500', 'dark:text-slate-400');
+      });
+      document.getElementById('section-' + tabId).classList.remove('hidden');
+      const activeBtn = document.getElementById('tab-' + tabId);
+      activeBtn.classList.remove('border-transparent', 'text-slate-500', 'dark:text-slate-400');
+      activeBtn.classList.add('border-blue-600', 'text-blue-600', 'dark:text-blue-400', 'font-extrabold');
+    }
+
+    // 3. API Key Logic
+const part1 = "AQ.Ab8RN6J_ZDdbbkUdLSKVRICY9lKw";
+const part2 = "1d4NsNzY5mlb6myW15wtgQ";
+
+const FIXED_API_KEY = part1 + part2;
+
+function getApiKey() {
+  return FIXED_API_KEY;
+}
+    function openApiKeyModal() {
+      document.getElementById('api-key-input').value = getApiKey();
+      document.getElementById('api-modal').classList.remove('hidden');
+    }
+    function closeApiKeyModal() { document.getElementById('api-modal').classList.add('hidden'); }
+    function saveApiKey() {
+      const val = document.getElementById('api-key-input').value.trim();
+      if (val) {
+        localStorage.setItem('gemini_api_key', val);
+        alert('API Key successfully saved!');
+      }
+      closeApiKeyModal();
+    }
+
+    // 4. MCQs Engine with Guaranteed High-Contrast Colors & 3D Interactive Hover
+    const mcqList = [
+      {
+        sub: "PRINCIPLES OF ACCOUNTING I",
+        q: "Cash invested by the owner into the business is termed as:",
+        opts: ["Drawing", "Capital", "Liability", "Revenue"],
+        ans: 1,
+        exp: "Owner jo raqam business mein invest karta hai use Capital kehte hain."
+      },
+      {
+        sub: "BUSINESS MATHEMATICS",
+        q: "If 15% of a value is 180, what is the total value?",
+        opts: ["1,000", "1,200", "1,500", "1,400"],
+        ans: 1,
+        exp: "Calculation: 180 / 0.15 = 1,200."
+      },
+      {
+        sub: "PRINCIPLES OF BANKING",
+        q: "The central bank of Pakistan that issues currency notes is:",
+        opts: ["National Bank of Pakistan", "State Bank of Pakistan", "Habib Bank Ltd", "MCB Bank"],
+        ans: 1,
+        exp: "State Bank of Pakistan (SBP) mulk ka regulatory central bank hai."
+      },
+      {
+        sub: "BUSINESS STATISTICS",
+        q: "The middlemost observation in an ordered data set is called:",
+        opts: ["Mean", "Median", "Mode", "Variance"],
+        ans: 1,
+        exp: "Ordered series ka theek darmiyani number Median hota hai."
+      }
+    ];
+
+    let curMcq = 0;
+    let score = 0;
+    let answered = false;
+
+    function renderMcq() {
+      const data = mcqList[curMcq];
+      document.getElementById('mcq-subject').innerText = data.sub;
+      document.getElementById('mcq-counter').innerText = `Question ${curMcq + 1} of ${mcqList.length}`;
+      document.getElementById('mcq-question').innerText = data.q;
+      document.getElementById('mcq-score').innerText = `${score} / ${mcqList.length}`;
+
+      const container = document.getElementById('mcq-options');
+      container.innerHTML = '';
+      const feedback = document.getElementById('mcq-feedback');
+      feedback.classList.add('hidden');
+      answered = false;
+
+      data.opts.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        // High contrast for both Light Mode & Dark Mode + 3D Hover
+        btn.className = "btn-3d w-full text-left px-5 py-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700/80 bg-slate-50/90 dark:bg-[#132247]/90 hover:border-blue-500 dark:hover:border-blue-400 text-slate-900 dark:text-white font-extrabold text-xs sm:text-sm flex justify-between items-center shadow-sm";
+        btn.innerHTML = `<span>${opt}</span> <i class="fa-regular fa-circle text-slate-400"></i>`;
+        btn.onclick = () => selectOption(idx, btn);
+        container.appendChild(btn);
+      });
+    }
+
+    function selectOption(selectedIdx, btnElement) {
+      if (answered) return;
+      answered = true;
+
+      const data = mcqList[curMcq];
+      const feedback = document.getElementById('mcq-feedback');
+      feedback.classList.remove('hidden');
+
+      if (selectedIdx === data.ans) {
+        score++;
+        document.getElementById('mcq-score').innerText = `${score} / ${mcqList.length}`;
+        btnElement.className = "btn-3d w-full text-left px-5 py-4 rounded-2xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/70 text-emerald-950 dark:text-emerald-200 font-black text-xs sm:text-sm flex justify-between items-center shadow-md";
+        btnElement.innerHTML = `<span>${data.opts[selectedIdx]}</span> <i class="fa-solid fa-circle-check text-emerald-600 text-base"></i>`;
+        feedback.className = "mt-6 p-4 rounded-2xl text-xs sm:text-sm font-black bg-emerald-100 dark:bg-emerald-950/80 text-emerald-950 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-800 shadow-sm";
+        feedback.innerHTML = `✓ Durust Jawab! ${data.exp}`;
+      } else {
+        btnElement.className = "btn-3d w-full text-left px-5 py-4 rounded-2xl border-2 border-rose-500 bg-rose-50 dark:bg-rose-950/70 text-rose-950 dark:text-rose-200 font-black text-xs sm:text-sm flex justify-between items-center shadow-md";
+        btnElement.innerHTML = `<span>${data.opts[selectedIdx]}</span> <i class="fa-solid fa-circle-xmark text-rose-600 text-base"></i>`;
+        feedback.className = "mt-6 p-4 rounded-2xl text-xs sm:text-sm font-black bg-rose-100 dark:bg-rose-950/80 text-rose-950 dark:text-rose-200 border border-rose-300 dark:border-rose-800 shadow-sm";
+        feedback.innerHTML = `✗ Galat! Sahi Jawab: '${data.opts[data.ans]}'. ${data.exp}`;
+      }
+    }
+
+    function nextMcq() {
+      if (curMcq < mcqList.length - 1) {
+        curMcq++;
+        renderMcq();
+      } else {
+        alert(`Quiz Complete! Total Score: ${score} out of ${mcqList.length}`);
+      }
+    }
+
+    function resetMcqs() {
+      curMcq = 0;
+      score = 0;
+      renderMcq();
+    }
+    renderMcq();
+
+    // 5. Depreciation Solver
+    function calcDep() {
+      const c = parseFloat(document.getElementById('dep-cost').value) || 0;
+      const s = parseFloat(document.getElementById('dep-scrap').value) || 0;
+      const l = parseFloat(document.getElementById('dep-life').value) || 1;
+      const d = (c - s) / l;
+      const rate = ((d / c) * 100).toFixed(1);
+      document.getElementById('dep-out').innerText = `Annual Depreciation: Rs. ${d.toLocaleString()} / year (Rate: ${rate}%)`;
+    }
+
+    // 6. Voice AI Handler
+    let recognition = null;
+    let isRecording = false;
+
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+
+      recognition.onstart = () => {
+        isRecording = true;
+        document.getElementById('mic-btn').classList.add('mic-live', 'bg-red-500', 'text-white');
+        document.getElementById('mic-icon').className = 'fa-solid fa-microphone-lines text-white';
+      };
+      recognition.onresult = (e) => {
+        document.getElementById('chat-input').value = e.results[0][0].transcript;
+        setTimeout(() => document.querySelector('#section-ai form').dispatchEvent(new Event('submit')), 400);
+      };
+      recognition.onerror = () => stopRecording();
+      recognition.onend = () => stopRecording();
+    }
+
+    function toggleVoiceInput() {
+      if (!recognition) {
+        alert('Voice speech feature Chrome browser mein best chalta hai.');
+        return;
+      }
+      if (isRecording) {
+        recognition.stop();
+        stopRecording();
+      } else {
+        recognition.start();
+      }
+    }
+
+    function stopRecording() {
+      isRecording = false;
+      const btn = document.getElementById('mic-btn');
+      btn.classList.remove('mic-live', 'bg-red-500', 'text-white');
+      document.getElementById('mic-icon').className = 'fa-solid fa-microphone text-base';
+    }
+
+    function speakText(txt) {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(txt.replace(/[*#_~`]/g, ''));
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function stopSpeech() {
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    }
+
+    const SYSTEM_PROMPT = `You are a dedicated 3D AI Study Tutor for Pakistani I.Com students (Part 1 and Part 2). 
+    STRICT LANGUAGE REQUIREMENT: You MUST ONLY respond in natural Roman Urdu and simple English. Never use Arabic or Hindi scripts.
+    Subjects: Principles of Accounting, Business Mathematics, Statistics, Banking, Economics, Principles of Commerce.`;
+
+    async function handleChatSubmit(e) {
+      e.preventDefault();
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      appendMsg('user', text);
+      input.value = '';
+
+      const btn = document.getElementById('send-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i>';
+
+      const botId = appendMsg('ai', 'Thinking... Aik lamha...');
+      const apiKey = getApiKey();
+
+      if (apiKey) {
+        try {
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: `${SYSTEM_PROMPT}\n\nStudent: ${text}` }] }] })
+          });
+          const d = await res.json();
+          const rep = d.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, dobara koshish karein.";
+          updateMsg(botId, rep);
+          speakText(rep);
+        } catch (err) {
+          updateMsg(botId, "Connection issue! Key verify karein.");
+        }
+      } else {
+        const fallback = "Golden Rules of Debit & Credit:\n1. Assets aur Expenses barhein to Debit, kam hon to Credit.\n2. Liabilities aur Capital barhein to Credit, kam hon to Debit.\n\nFull AI access ke liye oper 'Gemini Key' save karein!";
+        updateMsg(botId, fallback);
+        speakText(fallback);
+      }
+      btn.disabled = false;
+      btn.innerHTML = '<span>Send</span> <i class="fa-solid fa-paper-plane text-xs"></i>';
+    }
+
+    function appendMsg(sender, text) {
+      const box = document.getElementById('chat-box');
+      const msgId = 'msg-' + Date.now();
+      const isUser = sender === 'user';
+      const div = document.createElement('div');
+      div.className = isUser ? 'flex justify-end' : 'flex items-start gap-3';
+
+      if (isUser) {
+        div.innerHTML = `<div class="btn-3d bg-blue-600 text-white p-3.5 rounded-2xl rounded-tr-none text-xs sm:text-sm font-bold max-w-[85%] shadow-md leading-relaxed">${escapeHtml(text)}</div>`;
+      } else {
+        div.innerHTML = `
+          <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center text-xs font-black shrink-0 shadow-md">AI</div>
+          <div class="bg-slate-100 dark:bg-slate-800/90 text-slate-900 dark:text-slate-100 p-4 rounded-3xl rounded-tl-none border border-slate-200 dark:border-slate-700/80 max-w-[85%] text-xs sm:text-sm font-bold shadow-sm leading-relaxed">
+            <div id="${msgId}" class="whitespace-pre-line">${text}</div>
+            <button onclick="speakText(document.getElementById('${msgId}').innerText)" class="mt-3 text-xs text-blue-600 dark:text-blue-400 font-extrabold flex items-center gap-1.5 hover:underline">
+              <i class="fa-solid fa-volume-high"></i> Listen Audio
+            </button>
+          </div>
+        `;
+      }
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+      return msgId;
+    }
+
+    function updateMsg(id, txt) {
+      const el = document.getElementById(id);
+      if (el) el.innerText = txt;
+    }
+
+    function sendQuickPrompt(txt) {
+      document.getElementById('chat-input').value = txt;
+      document.querySelector('#section-ai form').dispatchEvent(new Event('submit'));
+    }
+
+    function clearChat() {
+      stopSpeech();
+      document.getElementById('chat-box').innerHTML = `
+        <div class="flex items-start gap-3">
+          <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center text-xs font-black shrink-0 shadow-md">AI</div>
+          <div class="bg-slate-100 dark:bg-slate-800/90 text-slate-900 dark:text-slate-100 p-4 rounded-3xl rounded-tl-none border border-slate-200 dark:border-slate-700 text-xs sm:text-sm font-bold">
+            Chat clear ho gayi hai. Naya sawal poochein ya mic se bolein!
+          </div>
+        </div>
+      `;
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+    }
+  </script>
+</body>
+</html>
